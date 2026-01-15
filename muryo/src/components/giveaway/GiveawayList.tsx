@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Typography, Alert, Stack } from '@mui/material';
+import { Box, Typography, Alert, Stack } from '@mui/material';
 import { GiveawayCard } from './GiveawayCard';
 import { EmptyState } from '@/components/common/EmptyState';
 import { GiveawayListSkeleton } from '@/components/common/LoadingSkeleton';

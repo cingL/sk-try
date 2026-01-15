@@ -1,10 +1,11 @@
-import { Component, ReactNode } from 'react';
-import { Box, Typography, Button, Alert } from '@mui/material';
+import { Component } from 'react';
+import type { ReactNode } from 'react';
+import { Box, Typography, Button } from '@mui/material';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 interface Props {
   children: ReactNode;
-  fallback?: ReactNode;
+  fallback?: ReactNode | null;
 }
 
 interface State {

@@ -40,7 +40,7 @@ export function generateDeepLink(link: ExternalLink): string {
   const schemeConfig = URL_SCHEMES[link.platform];
 
   if (!schemeConfig) {
-    return link.url || schemeConfig.fallback;
+    return link.url || 'https://';
   }
 
   // If URL scheme is provided, use it

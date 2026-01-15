@@ -44,7 +44,11 @@ export async function cacheGiveaways(giveaways: any[]): Promise<void> {
       });
     }
 
-    await transaction.complete;
+    // Wait for transaction to complete
+    await new Promise<void>((resolve, reject) => {
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
   } catch (error) {
     console.warn('Failed to cache giveaways:', error);
   }
