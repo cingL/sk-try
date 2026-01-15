@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Redirecting...</title>
+    <script>
+      // GitHub Pages SPA routing fix
+      // This file handles 404 errors and redirects to index.html
+      // so React Router can handle the routing
+      const path = window.location.pathname;
+      const search = window.location.search;
+      const hash = window.location.hash;
+      
+      // Extract base path (e.g., /sk-try/)
+      const segments = path.split('/').filter(Boolean);
+      const basePath = segments.length > 0 ? '/' + segments[0] + '/' : '/';
+      
+      // Redirect to index.html, preserving the path
+      const redirectTo = basePath + 'index.html' + path.replace(basePath, '') + search + hash;
+      window.location.replace(redirectTo);
+    </script>
+  </head>
+  <body>
+    <p>Redirecting...</p>
+  </body>
+</html>
