@@ -1,0 +1,564 @@
+openapi: 3.0.3
+info:
+  title: Muryo Giveaway API
+  description: |
+    活动无料信息展示系统 API 规范。
+    
+    基于 Supabase PostgREST 自动生成的 REST API，本文档描述前端使用的主要端点。
+  version: 1.0.0
+  contact:
+    name: Muryo Team
+
+servers:
+  - url: https://{project}.supabase.co/rest/v1
+    description: Supabase REST API
+    variables:
+      project:
+        default: your-project-id
+        description: Supabase project ID
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+tags:
+  - name: Events
+    description: 活动管理
+  - name: Giveaways
+    description: 无料信息管理
+  - name: Providers
+    description: 提供者管理
+  - name: Storage
+    description: 图片上传
+
+paths:
+  /events:
+    get:
+      tags: [Events]
+      summary: 获取活动列表
+      description: 获取所有活动，支持按状态筛选
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [upcoming, ongoing, ended]
+          description: 按状态筛选
+        - name: select
+          in: query
+          schema:
+            type: string
+            default: "*"
+          description: 选择返回字段
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+
+  /events/{id}:
+    get:
+      tags: [Events]
+      summary: 获取单个活动详情
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          description: 活动不存在
+
+  /giveaways:
+    get:
+      tags: [Giveaways]
+      summary: 获取无料信息列表
+      description: |
+        获取无料信息列表，支持搜索、筛选和分页。
+        使用 PostgREST 查询语法。
+      parameters:
+        - name: event_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: 活动 ID (必需)
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [available, limited, ended]
+          description: 按状态筛选
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [goods, print, digital, other]
+          description: 按类别筛选
+        - name: or
+          in: query
+          schema:
+            type: string
+          example: "(title.ilike.*keyword*,description.ilike.*keyword*)"
+          description: 全文搜索 (标题或描述包含关键词)
+        - name: select
+          in: query
+          schema:
+            type: string
+            default: "*,provider:providers(*)"
+          description: 选择返回字段，支持关联查询
+        - name: order
+          in: query
+          schema:
+            type: string
+            default: created_at.desc
+          description: 排序字段
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+          description: 返回数量限制
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+          description: 分页偏移量
+      responses:
+        "200":
+          description: 成功
+          headers:
+            Content-Range:
+              schema:
+                type: string
+              description: 分页范围信息
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GiveawayWithProvider"
+
+    post:
+      tags: [Giveaways]
+      summary: 创建无料信息
+      description: 需要认证。用户必须先创建 Provider 资料。
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GiveawayCreate"
+      responses:
+        "201":
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Giveaway"
+        "401":
+          description: 未认证
+        "403":
+          description: 无权限 (无 Provider 资料)
+
+  /giveaways/{id}:
+    get:
+      tags: [Giveaways]
+      summary: 获取单条无料详情
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: select
+          in: query
+          schema:
+            type: string
+            default: "*,provider:providers(*)"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GiveawayWithProvider"
+        "404":
+          description: 不存在
+
+    patch:
+      tags: [Giveaways]
+      summary: 更新无料信息
+      description: 需要认证，只能更新自己的无料信息
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GiveawayUpdate"
+      responses:
+        "200":
+          description: 更新成功
+        "401":
+          description: 未认证
+        "403":
+          description: 无权限
+
+  /providers:
+    get:
+      tags: [Providers]
+      summary: 获取提供者列表
+      parameters:
+        - name: user_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+          description: 按用户 ID 查询
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Provider"
+
+    post:
+      tags: [Providers]
+      summary: 创建提供者资料
+      description: 需要认证，每个用户只能创建一个资料
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProviderCreate"
+      responses:
+        "201":
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Provider"
+        "401":
+          description: 未认证
+        "409":
+          description: 资料已存在
+
+  /providers/{id}:
+    patch:
+      tags: [Providers]
+      summary: 更新提供者资料
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProviderUpdate"
+      responses:
+        "200":
+          description: 更新成功
+        "401":
+          description: 未认证
+        "403":
+          description: 无权限
+
+  /storage/v1/object/giveaway-images/{path}:
+    post:
+      tags: [Storage]
+      summary: 上传图片
+      description: |
+        上传无料图片到 Supabase Storage。
+        路径格式: `{event_id}/{giveaway_id}/original/{filename}`
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "event-uuid/giveaway-uuid/original/image.jpg"
+      requestBody:
+        required: true
+        content:
+          image/jpeg:
+            schema:
+              type: string
+              format: binary
+          image/png:
+            schema:
+              type: string
+              format: binary
+          image/webp:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "200":
+          description: 上传成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Key:
+                    type: string
+                    description: 存储路径
+        "401":
+          description: 未认证
+        "413":
+          description: 文件过大 (>5MB)
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: apikey
+      description: Supabase anon key (公开 API 访问)
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Supabase Auth JWT token (认证操作)
+
+  schemas:
+    Event:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 200
+        start_time:
+          type: string
+          format: date-time
+        end_time:
+          type: string
+          format: date-time
+        location:
+          type: string
+          maxLength: 500
+        status:
+          type: string
+          enum: [upcoming, ongoing, ended]
+        created_at:
+          type: string
+          format: date-time
+
+    Giveaway:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        event_id:
+          type: string
+          format: uuid
+        provider_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+          minItems: 1
+        pickup_condition:
+          type: string
+          nullable: true
+        category:
+          type: string
+          enum: [goods, print, digital, other]
+          nullable: true
+        status:
+          type: string
+          enum: [available, limited, ended]
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    GiveawayCreate:
+      type: object
+      required: [event_id, provider_id, title, description, images]
+      properties:
+        event_id:
+          type: string
+          format: uuid
+        provider_id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+          minItems: 1
+        pickup_condition:
+          type: string
+        category:
+          type: string
+          enum: [goods, print, digital, other]
+
+    GiveawayUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+            format: uri
+          minItems: 1
+        pickup_condition:
+          type: string
+        category:
+          type: string
+          enum: [goods, print, digital, other]
+        status:
+          type: string
+          enum: [available, limited, ended]
+
+    GiveawayWithProvider:
+      allOf:
+        - $ref: "#/components/schemas/Giveaway"
+        - type: object
+          properties:
+            provider:
+              $ref: "#/components/schemas/Provider"
+
+    Provider:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 100
+        booth_area:
+          type: string
+          maxLength: 20
+        booth_number:
+          type: string
+          maxLength: 20
+        external_links:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExternalLink"
+        created_at:
+          type: string
+          format: date-time
+
+    ProviderCreate:
+      type: object
+      required: [name, booth_area, booth_number]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        booth_area:
+          type: string
+          maxLength: 20
+        booth_number:
+          type: string
+          maxLength: 20
+        external_links:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExternalLink"
+
+    ProviderUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        booth_area:
+          type: string
+          maxLength: 20
+        booth_number:
+          type: string
+          maxLength: 20
+        external_links:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExternalLink"
+
+    ExternalLink:
+      type: object
+      required: [platform, username, url]
+      properties:
+        platform:
+          type: string
+          enum: [twitter, pixiv, website, other]
+        username:
+          type: string
+        url:
+          type: string
+          format: uri
+        scheme:
+          type: string
+          description: App URL Scheme for deep linking
