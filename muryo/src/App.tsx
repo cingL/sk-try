@@ -22,10 +22,14 @@ function AppContent() {
 }
 
 function App() {
+  // 获取 base path，用于 GitHub Pages 部署
+  // import.meta.env.BASE_URL 是 Vite 自动注入的，会根据 vite.config.ts 中的 base 配置
+  const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter>
+      <BrowserRouter basename={basename}>
         <ErrorBoundary>
           <AppContent />
         </ErrorBoundary>
