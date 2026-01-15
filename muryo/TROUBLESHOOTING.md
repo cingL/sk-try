@@ -8,14 +8,12 @@ GitHub Pages 的 URL 格式：`https://<用户名>.github.io/<仓库名>/`
 
 **你的仓库信息：**
 - 用户名：`cingL`
-- 仓库名：`speckit-try`
-- **正确的访问地址**：`https://cingl.github.io/speckit-try/`
-
-⚠️ **注意**：你访问的 `https://cingl.github.io/sk-try` 是错误的 URL！
+- 仓库名：`sk-try`
+- **正确的访问地址**：`https://cingl.github.io/sk-try/`
 
 ### 2. 检查 GitHub Actions 部署状态
 
-1. 进入 GitHub 仓库：https://github.com/cingL/speckit-try
+1. 进入 GitHub 仓库：https://github.com/cingL/sk-try
 2. 点击 **Actions** 标签页
 3. 查看最新的 "Deploy to GitHub Pages" 工作流运行状态
 
@@ -66,7 +64,7 @@ GitHub Pages 的 URL 格式：`https://<用户名>.github.io/<仓库名>/`
 **原因**：base path 配置不正确
 
 **解决**：
-- 确认 `VITE_BASE_PATH` 设置为 `/speckit-try/`
+- 确认 `VITE_BASE_PATH` 设置为 `/sk-try/`
 - 检查浏览器控制台，查看资源加载错误
 
 #### 问题 4：部署成功但页面 404
@@ -80,7 +78,7 @@ GitHub Pages 的 URL 格式：`https://<用户名>.github.io/<仓库名>/`
 
 部署成功后，检查以下内容：
 
-1. **访问正确的 URL**：`https://cingl.github.io/speckit-try/`
+1. **访问正确的 URL**：`https://cingl.github.io/sk-try/`
 2. **检查页面元素**：打开浏览器开发者工具（F12）
    - Console 标签：查看是否有 JavaScript 错误
    - Network 标签：查看资源是否正常加载
@@ -108,7 +106,7 @@ GitHub Pages 的 URL 格式：`https://<用户名>.github.io/<仓库名>/`
 
 ## 快速检查清单
 
-- [ ] 访问正确的 URL：`https://cingl.github.io/speckit-try/`
+- [ ] 访问正确的 URL：`https://cingl.github.io/sk-try/`
 - [ ] GitHub Actions 工作流运行成功
 - [ ] GitHub Pages 设置正确（Source = GitHub Actions）
 - [ ] GitHub Secrets 已配置（至少 VITE_SUPABASE_URL 和 VITE_SUPABASE_ANON_KEY）

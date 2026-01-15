@@ -45,8 +45,8 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_EVENT_ID: ${{ secrets.VITE_EVENT_ID }}
           # 设置 GitHub Pages base path（如果仓库不在根目录）
-          # 格式：/仓库名/，例如 /speckit-try/
-          VITE_BASE_PATH: ${{ secrets.VITE_BASE_PATH || '/speckit-try/' }}
+          # 格式：/仓库名/，例如 /sk-try/
+          VITE_BASE_PATH: ${{ secrets.VITE_BASE_PATH || '/sk-try/' }}
         run: npm run build
 
       - name: Setup Pages
