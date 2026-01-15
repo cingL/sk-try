@@ -11,7 +11,6 @@ export default defineConfig({
     {
       name: 'copy-404',
       closeBundle() {
-        const basePath = process.env.VITE_BASE_PATH || '/'
         const distPath = path.resolve(__dirname, 'dist')
         try {
           copyFileSync(
