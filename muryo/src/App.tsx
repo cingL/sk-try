@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { theme } from '@/theme';
 import { Layout } from '@/components/layout/Layout';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { EnvCheck } from '@/components/common/EnvCheck';
 import { useScrollRestoration } from '@/hooks/useScrollRestoration';
 import HomePage from '@/pages/HomePage';
 import DetailPage from '@/pages/DetailPage';
@@ -26,14 +27,25 @@ function App() {
   // import.meta.env.BASE_URL 是 Vite 自动注入的，会根据 vite.config.ts 中的 base 配置
   const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
 
+  // Check environment variables
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  const eventId = import.meta.env.VITE_EVENT_ID;
+  
+  const hasMissingEnvVars = !supabaseUrl || !supabaseAnonKey || !eventId;
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <BrowserRouter basename={basename}>
-        <ErrorBoundary>
-          <AppContent />
-        </ErrorBoundary>
-      </BrowserRouter>
+      {hasMissingEnvVars ? (
+        <EnvCheck />
+      ) : (
+        <BrowserRouter basename={basename}>
+          <ErrorBoundary>
+            <AppContent />
+          </ErrorBoundary>
+        </BrowserRouter>
+      )}
     </ThemeProvider>
   );
 }
